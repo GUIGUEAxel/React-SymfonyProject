@@ -1,6 +1,24 @@
 import React, { useState, useEffect } from 'react';
-import { Container, Heading, Grid, Box, Spinner, Text, Center, Input, InputGroup, InputLeftElement, VStack, useColorModeValue } from '@chakra-ui/react';
-import { SearchIcon } from '@chakra-ui/icons';
+import { 
+  Container, 
+  Heading, 
+  Grid, 
+  Box, 
+  Spinner, 
+  Text, 
+  Center, 
+  Input, 
+  InputGroup, 
+  InputLeftElement, 
+  VStack, 
+  useColorModeValue,
+  Button,
+  HStack,
+  Flex,
+  Icon,
+  Tooltip
+} from '@chakra-ui/react';
+import { SearchIcon, ArrowUpIcon, ArrowDownIcon } from '@chakra-ui/icons';
 import axios from 'axios';
 import ArtistCard from '../components/ArtistCard';
 
@@ -9,6 +27,7 @@ const ArtistsPage = () => {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   const [searchTerm, setSearchTerm] = useState('');
+  const [sortOrder, setSortOrder] = useState('asc'); // 'asc' pour croissant, 'desc' pour décroissant
   
   useEffect(() => {
     const fetchArtists = async () => {
@@ -27,7 +46,6 @@ const ArtistsPage = () => {
           setArtists(response.data);
         } else {
           console.log("Structure inconnue, utilisation des données brutes");
-          // Assurez-vous d'initialiser artists à un tableau vide si les données sont invalides
           setArtists(Array.isArray(response.data) ? response.data : []);
         }
       } catch (err) {
@@ -43,10 +61,22 @@ const ArtistsPage = () => {
     fetchArtists();
   }, []);
   
-  // Filtrer les artistes selon la recherche
-  const filteredArtists = artists.filter(artist => 
-    artist && artist.name && artist.name.toLowerCase().includes(searchTerm.toLowerCase())
-  );
+  // Fonction pour basculer l'ordre de tri
+  const toggleSortOrder = () => {
+    setSortOrder(prevOrder => prevOrder === 'asc' ? 'desc' : 'asc');
+  };
+  
+  // Filtrer et trier les artistes
+  const sortedAndFilteredArtists = artists
+    .filter(artist => 
+      artist && artist.name && artist.name.toLowerCase().includes(searchTerm.toLowerCase())
+    )
+    .sort((a, b) => {
+      if (!a.name || !b.name) return 0;
+      
+      const comparison = a.name.localeCompare(b.name);
+      return sortOrder === 'asc' ? comparison : -comparison;
+    });
   
   if (loading) {
     return (
@@ -79,29 +109,43 @@ const ArtistsPage = () => {
           Découvrez nos artistes
         </Heading>
         
-        <InputGroup mb={6}>
-          <InputLeftElement pointerEvents="none">
-            <SearchIcon color="gray.400" />
-          </InputLeftElement>
-          <Input
-            placeholder="Rechercher un artiste..."
-            value={searchTerm}
-            onChange={(e) => setSearchTerm(e.target.value)}
-            bg={useColorModeValue('white', 'gray.800')}
-            border="1px solid"
-            borderColor={useColorModeValue('gray.200', 'gray.700')}
-            _focus={{
-              borderColor: "blue.500",
-              boxShadow: "0 0 0 1px var(--chakra-colors-blue-500)",
-            }}
-          />
-        </InputGroup>
+        <Flex direction={{ base: "column", md: "row" }} gap={4}>
+          <InputGroup flex="1">
+            <InputLeftElement pointerEvents="none">
+              <SearchIcon color="gray.400" />
+            </InputLeftElement>
+            <Input
+              placeholder="Rechercher un artiste..."
+              value={searchTerm}
+              onChange={(e) => setSearchTerm(e.target.value)}
+              bg={useColorModeValue('white', 'gray.800')}
+              border="1px solid"
+              borderColor={useColorModeValue('gray.200', 'gray.700')}
+              _focus={{
+                borderColor: "blue.500",
+                boxShadow: "0 0 0 1px var(--chakra-colors-blue-500)",
+              }}
+            />
+          </InputGroup>
+          
+          <Tooltip label={sortOrder === 'asc' ? 'Trier de Z à A' : 'Trier de A à Z'}>
+            <Button 
+              onClick={toggleSortOrder}
+              leftIcon={sortOrder === 'asc' ? <ArrowUpIcon /> : <ArrowDownIcon />}
+              colorScheme="blue"
+              variant="outline"
+              minW="140px"
+            >
+              {sortOrder === 'asc' ? 'A → Z' : 'Z → A'}
+            </Button>
+          </Tooltip>
+        </Flex>
         
         {artists.length === 0 ? (
           <Box textAlign="center" p={10} bg={useColorModeValue('gray.50', 'gray.700')} rounded="md">
             <Text fontSize="lg">Aucun artiste trouvé.</Text>
           </Box>
-        ) : filteredArtists.length === 0 ? (
+        ) : sortedAndFilteredArtists.length === 0 ? (
           <Box textAlign="center" p={10} bg={useColorModeValue('gray.50', 'gray.700')} rounded="md">
             <Text fontSize="lg">Aucun résultat pour "{searchTerm}"</Text>
           </Box>
@@ -114,17 +158,12 @@ const ArtistsPage = () => {
             }} 
             gap={6}
           >
-            {filteredArtists.map((artist) => (
+            {sortedAndFilteredArtists.map((artist) => (
               <ArtistCard key={artist.id} artist={artist} />
             ))}
           </Grid>
         )}
         
-        {artists.length > 0 && (
-          <Text textAlign="center" color={useColorModeValue('gray.600', 'gray.400')} fontSize="sm">
-            Affichage de {filteredArtists.length} artiste(s) sur un total de {artists.length}
-          </Text>
-        )}
       </VStack>
     </Container>
   );

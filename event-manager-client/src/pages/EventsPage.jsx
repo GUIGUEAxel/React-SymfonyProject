@@ -1,6 +1,25 @@
 import React, { useState, useEffect } from 'react';
-import { Container, Heading, Grid, Box, Spinner, Text, Center, Input, InputGroup, InputLeftElement, VStack, useColorModeValue, Select, Flex, SimpleGrid } from '@chakra-ui/react';
-import { SearchIcon } from '@chakra-ui/icons';
+import { 
+  Container, 
+  Heading, 
+  Box, 
+  Spinner, 
+  Text, 
+  Input, 
+  InputGroup, 
+  InputLeftElement, 
+  VStack, 
+  useColorModeValue, 
+  Flex, 
+  SimpleGrid,
+  Button,
+  HStack,
+  Icon,
+  Tooltip,
+  Spacer
+} from '@chakra-ui/react';
+import { SearchIcon, ArrowUpIcon, ArrowDownIcon } from '@chakra-ui/icons';
+import { FaSortAlphaDown, FaSortAlphaUp, FaCalendarAlt, FaSort } from 'react-icons/fa';
 import axios from 'axios';
 import EventCard from '../components/EventCard';
 
@@ -10,6 +29,12 @@ const EventsPage = () => {
   const [error, setError] = useState(null);
   const [searchTerm, setSearchTerm] = useState('');
   const [filter, setFilter] = useState('all');
+  const [sortField, setSortField] = useState('name'); // Champ de tri par défaut
+  const [sortDirection, setSortDirection] = useState('asc'); // Direction de tri par défaut
+  
+  
+  const activeColor = "blue"; 
+  const inactiveColor = "gray";
   
   useEffect(() => {
     const fetchEvents = async () => {
@@ -45,23 +70,79 @@ const EventsPage = () => {
     fetchEvents();
   }, []);
   
-  // Filtrer les événements selon la recherche et le type
-  const filteredEvents = events.filter(event => {
-    const matchesSearch = event && event.name && 
-      event.name.toLowerCase().includes(searchTerm.toLowerCase());
-    
-    const matchesFilter = filter === 'all' || 
-      (event && event.type && event.type.toLowerCase() === filter.toLowerCase());
-    
-    return matchesSearch && matchesFilter;
-  });
+  // Gestion du tri
+  const handleSort = (field) => {
+    if (sortField === field) {
+      // Si on clique sur le même champ, on inverse la direction
+      setSortDirection(sortDirection === 'asc' ? 'desc' : 'asc');
+    } else {
+      // Si on change de champ de tri, on revient à l'ordre croissant par défaut
+      setSortField(field);
+      setSortDirection('asc');
+    }
+  };
   
-  // Extraire tous les types d'événements uniques
-  const eventTypes = ['all', ...new Set(
-    events
-      .filter(event => event && event.type)
-      .map(event => event.type.toLowerCase())
-  )];
+  // Fonction pour obtenir l'icône de direction (toujours en noir)
+  const getSortIcon = (field) => {
+    if (sortField !== field) {
+      return <Icon as={FaSort} color="black" />;
+    }
+    
+    if (field === 'name') {
+      return sortDirection === 'asc' 
+        ? <Icon as={FaSortAlphaDown} color="black" />
+        : <Icon as={FaSortAlphaUp} color="black" />;
+    } else {
+      return sortDirection === 'asc' 
+        ? <Icon as={ArrowUpIcon} color="black" />
+        : <Icon as={ArrowDownIcon} color="black" />;
+    }
+  };
+  
+  // Filtrer et trier les événements
+  const sortAndFilterEvents = () => {
+    // Filtrer selon la recherche et le type
+    let result = events.filter(event => {
+      const matchesSearch = event && event.name && 
+        event.name.toLowerCase().includes(searchTerm.toLowerCase());
+      
+      const matchesFilter = filter === 'all' || 
+        (event && event.type && event.type.toLowerCase() === filter.toLowerCase());
+      
+      return matchesSearch && matchesFilter;
+    });
+    
+    // Trier les résultats
+    result = [...result].sort((a, b) => {
+      if (sortField === 'name') {
+        const nameA = (a.name || '').toLowerCase();
+        const nameB = (b.name || '').toLowerCase();
+        return sortDirection === 'asc' 
+          ? nameA.localeCompare(nameB)
+          : nameB.localeCompare(nameA);
+      } else if (sortField === 'date') {
+        // Utiliser la propriété date ou dateEvent, dépendant de votre structure de données
+        const dateFieldA = a.date || a.dateEvent;
+        const dateFieldB = b.date || b.dateEvent;
+        
+        // Si l'un des champs est indéfini, le mettre à la fin
+        if (!dateFieldA) return sortDirection === 'asc' ? 1 : -1;
+        if (!dateFieldB) return sortDirection === 'asc' ? -1 : 1;
+        
+        const dateA = new Date(dateFieldA);
+        const dateB = new Date(dateFieldB);
+        
+        return sortDirection === 'asc' 
+          ? dateA - dateB 
+          : dateB - dateA;
+      }
+      return 0;
+    });
+    
+    return result;
+  };
+  
+  const filteredAndSortedEvents = sortAndFilterEvents();
   
   if (loading) {
     return (
@@ -86,6 +167,9 @@ const EventsPage = () => {
       </Container>
     );
   }
+
+  // Utiliser cette couleur pour le texte sur les fonds sombres
+  const iconColor = useColorModeValue("black", "white");
   
   return (
     <Container maxW="container.xl" py={8}>
@@ -94,12 +178,14 @@ const EventsPage = () => {
           Événements à venir
         </Heading>
         
+        {/* Barre de recherche et boutons de tri dans le même Flex */}
         <Flex 
           direction={{ base: 'column', md: 'row' }} 
           gap={4} 
           mb={6}
+          align="center"
         >
-          <InputGroup flex="3">
+          <InputGroup>
             <InputLeftElement pointerEvents="none">
               <SearchIcon color="gray.400" />
             </InputLeftElement>
@@ -113,13 +199,49 @@ const EventsPage = () => {
             />
           </InputGroup>
           
+          <Spacer display={{ base: 'none', md: 'block' }} />
+          
+          {/* Boutons de tri */}
+          <HStack spacing={2} mt={{ base: 2, md: 0 }} w={{ base: '100%', md: 'auto' }}>
+            <Text fontWeight="bold" display={{ base: 'none', md: 'block' }}>Trier par :</Text>
+            <Tooltip label={`Trier par nom (${sortDirection === 'asc' ? 'A à Z' : 'Z à A'})`}>
+              <Button 
+                size="sm" 
+                leftIcon={
+                  sortField === 'name' 
+                    ? <Icon as={sortDirection === 'asc' ? FaSortAlphaDown : FaSortAlphaUp} color={iconColor} /> 
+                    : <Icon as={FaSort} color={iconColor} />
+                }
+                onClick={() => handleSort('name')}
+                colorScheme={sortField === 'name' ? activeColor : inactiveColor}
+                variant={sortField === 'name' ? 'solid' : 'outline'}
+              >
+                Nom
+              </Button>
+            </Tooltip>
+            <Tooltip label={`Trier par date (${sortDirection === 'asc' ? 'anciennes à récentes' : 'récentes à anciennes'})`}>
+              <Button 
+                size="sm" 
+                leftIcon={
+                  sortField === 'date' 
+                    ? <Icon as={sortDirection === 'asc' ? ArrowUpIcon : ArrowDownIcon} color={iconColor} /> 
+                    : <Icon as={FaSort} color={iconColor} />
+                }
+                onClick={() => handleSort('date')}
+                colorScheme={sortField === 'date' ? activeColor : inactiveColor}
+                variant={sortField === 'date' ? 'solid' : 'outline'}
+              >
+                Date
+              </Button>
+            </Tooltip>
+          </HStack>
         </Flex>
         
         {events.length === 0 ? (
           <Box textAlign="center" p={10} bg={useColorModeValue('gray.50', 'gray.700')} rounded="md">
             <Text fontSize="lg">Aucun événement trouvé.</Text>
           </Box>
-        ) : filteredEvents.length === 0 ? (
+        ) : filteredAndSortedEvents.length === 0 ? (
           <Box textAlign="center" p={10} bg={useColorModeValue('gray.50', 'gray.700')} rounded="md">
             <Text fontSize="lg">Aucun résultat pour votre recherche</Text>
           </Box>
@@ -132,7 +254,7 @@ const EventsPage = () => {
             }} 
             spacing={6}
           >
-            {filteredEvents.map((event) => (
+            {filteredAndSortedEvents.map((event) => (
               <EventCard key={event.id} event={event} />
             ))}
           </SimpleGrid>
