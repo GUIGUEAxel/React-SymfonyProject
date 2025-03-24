@@ -67,7 +67,7 @@ const ArtistDetailPage = () => {
     <Box>
       <Box mb={8} textAlign="center">
         <Image 
-          src={artist.imageUrl || "https://via.placeholder.com/300"} 
+          src={artist.imageUrl || "https://images.unsplash.com/photo-1511671782779-c97d3d27a1d4?ixlib=rb-1.2.1&auto=format&fit=crop&w=800&q=80"} 
           alt={artist.name}
           borderRadius="full"
           boxSize="200px"
@@ -102,7 +102,7 @@ const ArtistDetailPage = () => {
                 _hover={{ shadow: "md" }}
               >
                 <Image 
-                  src={event.imageUrl || "https://via.placeholder.com/400x200"} 
+                  src={event.imageUrl || "https://images.unsplash.com/photo-1511671782779-c97d3d27a1d4?ixlib=rb-1.2.1&auto=format&fit=crop&w=800&q=80"} 
                   alt={event.name}
                   h="200px"
                   w="100%"

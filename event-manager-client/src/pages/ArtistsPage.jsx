@@ -27,6 +27,7 @@ const ArtistsPage = () => {
           setArtists(response.data);
         } else {
           console.log("Structure inconnue, utilisation des données brutes");
+          // Assurez-vous d'initialiser artists à un tableau vide si les données sont invalides
           setArtists(Array.isArray(response.data) ? response.data : []);
         }
       } catch (err) {
@@ -119,6 +120,11 @@ const ArtistsPage = () => {
           </Grid>
         )}
         
+        {artists.length > 0 && (
+          <Text textAlign="center" color={useColorModeValue('gray.600', 'gray.400')} fontSize="sm">
+            Affichage de {filteredArtists.length} artiste(s) sur un total de {artists.length}
+          </Text>
+        )}
       </VStack>
     </Container>
   );
