@@ -236,30 +236,7 @@ const EventsPage = () => {
             </Tooltip>
           </HStack>
         </Flex>
-        
-        {events.length === 0 ? (
-          <Box textAlign="center" p={10} bg={useColorModeValue('gray.50', 'gray.700')} rounded="md">
-            <Text fontSize="lg">Aucun événement trouvé.</Text>
-          </Box>
-        ) : filteredAndSortedEvents.length === 0 ? (
-          <Box textAlign="center" p={10} bg={useColorModeValue('gray.50', 'gray.700')} rounded="md">
-            <Text fontSize="lg">Aucun résultat pour votre recherche</Text>
-          </Box>
-        ) : (
-          <SimpleGrid 
-            columns={{ 
-              base: 1, 
-              md: 2, 
-              lg: 3 
-            }} 
-            spacing={6}
-          >
-            {filteredAndSortedEvents.map((event) => (
-              <EventCard key={event.id} event={event} />
-            ))}
-          </SimpleGrid>
-        )}
-        
+       
       </VStack>
     </Container>
   );

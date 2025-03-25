@@ -3,14 +3,26 @@ import { useParams } from 'react-router-dom';
 import axios from 'axios';
 import { 
   Box, Heading, Text, Image, Divider, SimpleGrid, 
-  Spinner, Center, Badge, VStack, HStack, Button 
+  Spinner, Center, Badge, VStack, HStack, Button, 
+  Input, InputGroup, InputLeftElement, Flex, Spacer,
+  useColorModeValue, Icon, Tooltip
 } from '@chakra-ui/react';
+import { SearchIcon, ArrowUpIcon, ArrowDownIcon } from '@chakra-ui/icons';
+import { FaSortAlphaDown, FaSortAlphaUp, FaSort } from 'react-icons/fa';
+import EventCard from '../components/EventCard'; // Assurez-vous d'avoir ce composant
 
 const ArtistDetailPage = () => {
   const { id } = useParams();
   const [artist, setArtist] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
+  const [searchTerm, setSearchTerm] = useState('');
+  const [sortField, setSortField] = useState('name');
+  const [sortDirection, setSortDirection] = useState('asc');
+  
+  // Couleurs pour les boutons actifs/inactifs
+  const activeColor = "blue";
+  const inactiveColor = "gray";
   
   useEffect(() => {
     const fetchArtist = async () => {
@@ -28,6 +40,58 @@ const ArtistDetailPage = () => {
     
     fetchArtist();
   }, [id]);
+  
+  // Gestion du tri
+  const handleSort = (field) => {
+    if (sortField === field) {
+      // Si on clique sur le même champ, on inverse la direction
+      setSortDirection(sortDirection === 'asc' ? 'desc' : 'asc');
+    } else {
+      // Si on change de champ de tri, on revient à l'ordre croissant par défaut
+      setSortField(field);
+      setSortDirection('asc');
+    }
+  };
+  
+  // Filtrer et trier les événements
+  const sortAndFilterEvents = (events = []) => {
+    // Filtrer selon la recherche
+    let result = events.filter(event =>
+      event.name.toLowerCase().includes(searchTerm.toLowerCase())
+    );
+    
+    // Trier les résultats
+    result = [...result].sort((a, b) => {
+      if (sortField === 'name') {
+        const nameA = (a.name || '').toLowerCase();
+        const nameB = (b.name || '').toLowerCase();
+        return sortDirection === 'asc' 
+          ? nameA.localeCompare(nameB)
+          : nameB.localeCompare(nameA);
+      } else if (sortField === 'date') {
+        // Utiliser la propriété date ou dateEvent, dépendant de votre structure de données
+        const dateFieldA = a.date || a.dateEvent;
+        const dateFieldB = b.date || b.dateEvent;
+        
+        // Si l'un des champs est indéfini, le mettre à la fin
+        if (!dateFieldA) return sortDirection === 'asc' ? 1 : -1;
+        if (!dateFieldB) return sortDirection === 'asc' ? -1 : 1;
+        
+        const dateA = new Date(dateFieldA);
+        const dateB = new Date(dateFieldB);
+        
+        return sortDirection === 'asc' 
+          ? dateA - dateB 
+          : dateB - dateA;
+      }
+      return 0;
+    });
+    
+    return result;
+  };
+  
+  // Utiliser cette couleur pour le texte sur les fonds sombres
+  const iconColor = useColorModeValue("black", "white");
   
   if (loading) {
     return (
@@ -58,10 +122,13 @@ const ArtistDetailPage = () => {
     );
   }
   
-  // À ce stade, artist est garantit d'être défini
+  // À ce stade, artist est garanti d'être défini
   // Vérifiez les propriétés spécifiques avant d'y accéder
   const events = artist.events || [];
   const genres = artist.genres || [];
+  
+  // Filtrer et trier les événements
+  const filteredAndSortedEvents = sortAndFilterEvents(events);
   
   return (
     <Box>
@@ -90,41 +157,22 @@ const ArtistDetailPage = () => {
       <Divider my={6} />
       
       <Box mb={8}>
-        <Heading as="h2" size="lg" mb={4}>Événements à venir de artiste</Heading>
-        {events.length > 0 ? (
-          <SimpleGrid columns={{ base: 1, md: 2, lg: 3 }} spacing={6}>
-            {events.map(event => (
-              <Box 
-                key={event.id} 
-                borderWidth="1px" 
-                borderRadius="lg" 
-                overflow="hidden" 
-                _hover={{ shadow: "md" }}
-              >
-                <Image 
-                  src={event.imageUrl || "https://images.unsplash.com/photo-1511671782779-c97d3d27a1d4?ixlib=rb-1.2.1&auto=format&fit=crop&w=800&q=80"} 
-                  alt={event.name}
-                  h="200px"
-                  w="100%"
-                  objectFit="cover"
-                />
-                <Box p={4}>
-                  <Heading as="h3" size="md">{event.name}</Heading>
-                  <Text fontSize="sm" color="gray.500" mt={1}>
-                    {new Date(event.date).toLocaleDateString()}
-                  </Text>
-                  <Text mt={2} noOfLines={2}>{event.description}</Text>
-                  <Button mt={3} colorScheme="blue" size="sm">
-                    Voir détails
-                  </Button>
-                </Box>
-              </Box>
-            ))}
-          </SimpleGrid>
-        ) : (
+        <Heading as="h2" size="lg" mb={4}>Événements à venir de l'artiste</Heading>
+
+        {events.length === 0 ? (
           <Box textAlign="center" py={4}>
             <Text>Aucun événement à venir pour cet artiste</Text>
           </Box>
+        ) : filteredAndSortedEvents.length === 0 ? (
+          <Box textAlign="center" p={10} bg={useColorModeValue('gray.50', 'gray.700')} rounded="md">
+            <Text fontSize="lg">Aucun résultat pour votre recherche</Text>
+          </Box>
+        ) : (
+          <SimpleGrid columns={{ base: 1, md: 2, lg: 3 }} spacing={6}>
+            {filteredAndSortedEvents.map(event => (
+              <EventCard key={event.id} event={event} />
+            ))}
+          </SimpleGrid>
         )}
       </Box>
     </Box>
