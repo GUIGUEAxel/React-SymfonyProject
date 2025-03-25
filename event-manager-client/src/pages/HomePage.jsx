@@ -39,7 +39,6 @@ const Feature = ({ title, text, icon }) => {
 const HomePage = () => {
   return (
     <Box>
-      {/* Hero Section */}
       <Box
         bgImage="url('https://images.unsplash.com/photo-1470229722913-7c0e2dbbafd3?ixlib=rb-1.2.1&auto=format&fit=crop&w=1950&q=80')"
         bgPosition="center"
@@ -105,7 +104,6 @@ const HomePage = () => {
         </Container>
       </Box>
 
-      {/* CTA Section */}
       <Box py={16}>
         <Container maxW="container.xl" textAlign="center">
           <Heading mb={4}>Prêt à découvrir votre prochain événement musical ?</Heading>

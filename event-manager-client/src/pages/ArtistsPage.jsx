@@ -27,7 +27,7 @@ const ArtistsPage = () => {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   const [searchTerm, setSearchTerm] = useState('');
-  const [sortOrder, setSortOrder] = useState('asc'); // 'asc' pour croissant, 'desc' pour décroissant
+  const [sortOrder, setSortOrder] = useState('asc'); 
   
   useEffect(() => {
     const fetchArtists = async () => {
@@ -37,7 +37,6 @@ const ArtistsPage = () => {
         const response = await axios.get('http://localhost:8000/api/artists');
         console.log("Réponse complète:", response);
         
-        // Vérifiez la structure des données reçues
         if (response.data && Array.isArray(response.data['hydra:member'])) {
           console.log("Structure hydra détectée, utilisation de hydra:member");
           setArtists(response.data['hydra:member']);
@@ -51,7 +50,6 @@ const ArtistsPage = () => {
       } catch (err) {
         console.error("Erreur lors de la récupération des artistes:", err);
         setError("Impossible de charger les artistes. Veuillez réessayer plus tard.");
-        // Initialisez artists à un tableau vide en cas d'erreur
         setArtists([]);
       } finally {
         setLoading(false);
@@ -61,12 +59,10 @@ const ArtistsPage = () => {
     fetchArtists();
   }, []);
   
-  // Fonction pour basculer l'ordre de tri
   const toggleSortOrder = () => {
     setSortOrder(prevOrder => prevOrder === 'asc' ? 'desc' : 'asc');
   };
   
-  // Filtrer et trier les artistes
   const sortedAndFilteredArtists = artists
     .filter(artist => 
       artist && artist.name && artist.name.toLowerCase().includes(searchTerm.toLowerCase())

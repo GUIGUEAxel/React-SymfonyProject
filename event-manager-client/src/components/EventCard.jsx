@@ -4,17 +4,13 @@ import { Box, Text, Heading, Stack, Badge, Link, Flex, Icon, useColorModeValue }
 import { FaMapMarkerAlt, FaCalendarAlt, FaClock, FaTag } from 'react-icons/fa';
 
 const EventCard = ({ event }) => {
-  // Formatage de la date
   const formatDate = (dateString) => {
     const options = { year: 'numeric', month: 'long', day: 'numeric' };
-    // Utilise date ou dateEvent selon ce qui est disponible
     const dateToFormat = event.date || event.dateEvent;
     return dateToFormat ? new Date(dateToFormat).toLocaleDateString('fr-FR', options) : 'Date non définie';
   };
 
-  // Formatage de l'heure
   const formatTime = (dateString) => {
-    // Utilise date ou dateEvent selon ce qui est disponible
     const dateToFormat = event.date || event.dateEvent;
     if (!dateToFormat) return 'Heure non définie';
     
@@ -22,7 +18,6 @@ const EventCard = ({ event }) => {
     return date.toLocaleTimeString('fr-FR', { hour: '2-digit', minute: '2-digit' });
   };
 
-  // Couleurs pour les badges selon le type
   const getBadgeColor = (type) => {
     const types = {
       'Concert': 'purple',
@@ -60,7 +55,6 @@ const EventCard = ({ event }) => {
                   {event.type}
                 </Badge>
               )}
-              {/* Suppression de la mention "Gratuit" */}
             </Flex>
             
             <Heading 

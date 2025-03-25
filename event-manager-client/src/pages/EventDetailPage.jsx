@@ -53,7 +53,6 @@ const EventDetailPage = () => {
     )
   }
 
-  // Formatage de la date et de l'heure
   const formatDate = (dateString) => {
     const options = { year: 'numeric', month: 'long', day: 'numeric' }
     return new Date(dateString).toLocaleDateString('fr-FR', options)
@@ -64,7 +63,6 @@ const EventDetailPage = () => {
     return new Date(dateString).toLocaleTimeString('fr-FR', options)
   }
 
-  // Configuration des couleurs en fonction du thème
   const bgColor = useColorModeValue('gray.50', 'gray.700')
   const borderColor = useColorModeValue('gray.200', 'gray.600')
 
@@ -78,15 +76,14 @@ const EventDetailPage = () => {
         <Box>
           <Heading size="xl">{event.name}</Heading>
           <HStack mt={2} spacing={2}>
-            {/* Utilisation du type provenant des données, s'il existe */}
             {event.type && <Badge colorScheme="blue">{event.type}</Badge>}
-            <Badge colorScheme="green">{formatDate(event.date)}</Badge> {/* Utilisation de event.date au lieu de event.dateEvent */}
+            <Badge colorScheme="green">{formatDate(event.date)}</Badge> 
           </HStack>
         </Box>
         
         <Box>
           <Text fontSize="lg">
-            <strong>Date:</strong> {formatDate(event.date)} à {formatTime(event.date)} {/* Utilisation de event.date au lieu de event.dateEvent */}
+            <strong>Date:</strong> {formatDate(event.date)} à {formatTime(event.date)} 
           </Text>
           {event.location && (
             <Text fontSize="lg">
@@ -122,7 +119,6 @@ const EventDetailPage = () => {
         
         <Divider />
         
-        {/* Section des participants */}
         <Box>
           <Heading size="md" mb={4}>Participants ({event.participants?.length || 0})</Heading>
           
@@ -159,7 +155,6 @@ const EventDetailPage = () => {
           )}
         </Box>
         
-        {/* Information sur le créateur */}
         {event.creator && (
           <Box>
             <Text fontSize="sm" color="gray.500">

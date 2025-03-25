@@ -9,7 +9,7 @@ import {
 } from '@chakra-ui/react';
 import { SearchIcon, ArrowUpIcon, ArrowDownIcon } from '@chakra-ui/icons';
 import { FaSortAlphaDown, FaSortAlphaUp, FaSort } from 'react-icons/fa';
-import EventCard from '../components/EventCard'; // Assurez-vous d'avoir ce composant
+import EventCard from '../components/EventCard'; 
 
 const ArtistDetailPage = () => {
   const { id } = useParams();
@@ -20,7 +20,6 @@ const ArtistDetailPage = () => {
   const [sortField, setSortField] = useState('name');
   const [sortDirection, setSortDirection] = useState('asc');
   
-  // Couleurs pour les boutons actifs/inactifs
   const activeColor = "blue";
   const inactiveColor = "gray";
   
@@ -41,26 +40,20 @@ const ArtistDetailPage = () => {
     fetchArtist();
   }, [id]);
   
-  // Gestion du tri
   const handleSort = (field) => {
     if (sortField === field) {
-      // Si on clique sur le même champ, on inverse la direction
       setSortDirection(sortDirection === 'asc' ? 'desc' : 'asc');
     } else {
-      // Si on change de champ de tri, on revient à l'ordre croissant par défaut
       setSortField(field);
       setSortDirection('asc');
     }
   };
   
-  // Filtrer et trier les événements
   const sortAndFilterEvents = (events = []) => {
-    // Filtrer selon la recherche
     let result = events.filter(event =>
       event.name.toLowerCase().includes(searchTerm.toLowerCase())
     );
     
-    // Trier les résultats
     result = [...result].sort((a, b) => {
       if (sortField === 'name') {
         const nameA = (a.name || '').toLowerCase();
@@ -69,11 +62,9 @@ const ArtistDetailPage = () => {
           ? nameA.localeCompare(nameB)
           : nameB.localeCompare(nameA);
       } else if (sortField === 'date') {
-        // Utiliser la propriété date ou dateEvent, dépendant de votre structure de données
         const dateFieldA = a.date || a.dateEvent;
         const dateFieldB = b.date || b.dateEvent;
         
-        // Si l'un des champs est indéfini, le mettre à la fin
         if (!dateFieldA) return sortDirection === 'asc' ? 1 : -1;
         if (!dateFieldB) return sortDirection === 'asc' ? -1 : 1;
         
@@ -90,7 +81,6 @@ const ArtistDetailPage = () => {
     return result;
   };
   
-  // Utiliser cette couleur pour le texte sur les fonds sombres
   const iconColor = useColorModeValue("black", "white");
   
   if (loading) {
@@ -111,7 +101,6 @@ const ArtistDetailPage = () => {
     );
   }
   
-  // Vérifiez si artist existe avant d'utiliser ses propriétés
   if (!artist) {
     return (
       <Box textAlign="center" py={10}>
@@ -122,12 +111,9 @@ const ArtistDetailPage = () => {
     );
   }
   
-  // À ce stade, artist est garanti d'être défini
-  // Vérifiez les propriétés spécifiques avant d'y accéder
   const events = artist.events || [];
   const genres = artist.genres || [];
   
-  // Filtrer et trier les événements
   const filteredAndSortedEvents = sortAndFilterEvents(events);
   
   return (

@@ -4,7 +4,6 @@ import { Box, Image, Text, Heading, Stack, Badge, Link, Flex, Icon, useColorMode
 import { FaMusic, FaGlobe, FaUser } from 'react-icons/fa';
 
 const ArtistCard = ({ artist }) => {
-  // Image par défaut si aucune n'est fournie
   const defaultImage = artist.imageUrl || 'https://images.unsplash.com/photo-1511671782779-c97d3d27a1d4?ixlib=rb-1.2.1&auto=format&fit=crop&w=800&q=80';
 
   return (
