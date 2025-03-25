@@ -2,11 +2,14 @@ import { useState, useEffect } from 'react'
 import { useParams, Link as RouterLink } from 'react-router-dom'
 import { 
   Container, Heading, Text, Box, VStack, Spinner, 
-  Center, Button, Divider, HStack, Badge, Link 
+  Center, Button, Divider, HStack, Badge, Link, 
+  Table, Thead, Tbody, Tr, Th, Td, useColorModeValue,
+  Avatar, AvatarGroup
 } from '@chakra-ui/react'
-import { ArrowBackIcon } from '@chakra-ui/icons'
+import { ArrowBackIcon, EmailIcon } from '@chakra-ui/icons'
 import axios from 'axios'
 import React from 'react';
+
 const EventDetailPage = () => {
   const { id } = useParams()
   const [event, setEvent] = useState(null)
@@ -61,6 +64,10 @@ const EventDetailPage = () => {
     return new Date(dateString).toLocaleTimeString('fr-FR', options)
   }
 
+  // Configuration des couleurs en fonction du thème
+  const bgColor = useColorModeValue('gray.50', 'gray.700')
+  const borderColor = useColorModeValue('gray.200', 'gray.600')
+
   return (
     <Container maxW="container.xl" py={8}>
       <Button as={RouterLink} to="/events" mb={4} leftIcon={<ArrowBackIcon />}>
@@ -71,14 +78,15 @@ const EventDetailPage = () => {
         <Box>
           <Heading size="xl">{event.name}</Heading>
           <HStack mt={2} spacing={2}>
-            <Badge colorScheme="blue">{event.type || 'Concert'}</Badge>
-            <Badge colorScheme="green">{formatDate(event.dateEvent)}</Badge>
+            {/* Utilisation du type provenant des données, s'il existe */}
+            {event.type && <Badge colorScheme="blue">{event.type}</Badge>}
+            <Badge colorScheme="green">{formatDate(event.date)}</Badge> {/* Utilisation de event.date au lieu de event.dateEvent */}
           </HStack>
         </Box>
         
         <Box>
           <Text fontSize="lg">
-            <strong>Date:</strong> {formatDate(event.dateEvent)} à {formatTime(event.dateEvent)}
+            <strong>Date:</strong> {formatDate(event.date)} à {formatTime(event.date)} {/* Utilisation de event.date au lieu de event.dateEvent */}
           </Text>
           {event.location && (
             <Text fontSize="lg">
@@ -99,13 +107,66 @@ const EventDetailPage = () => {
         <Box>
           <Heading size="md" mb={4}>Artiste</Heading>
           {event.artist ? (
-            <Link as={RouterLink} to={`/artists/${event.artist.id}`} color="blue.500">
-              {event.artist.name}
-            </Link>
+            <HStack>
+              {event.artist.imageUrl && (
+                <Avatar size="md" name={event.artist.name} src={event.artist.imageUrl} />
+              )}
+              <Link as={RouterLink} to={`/artists/${event.artist.id}`} color="blue.500">
+                {event.artist.name}
+              </Link>
+            </HStack>
           ) : (
             <Text>Information sur l'artiste non disponible.</Text>
           )}
         </Box>
+        
+        <Divider />
+        
+        {/* Section des participants */}
+        <Box>
+          <Heading size="md" mb={4}>Participants ({event.participants?.length || 0})</Heading>
+          
+          {event.participants && event.participants.length > 0 ? (
+            <>
+              <Box overflowX="auto" borderWidth="1px" borderRadius="lg" borderColor={borderColor}>
+                <Table variant="simple" size="sm">
+                  <Thead bg={bgColor}>
+                    <Tr>
+                      <Th width="50px">#</Th>
+                      <Th>Email</Th>
+                    </Tr>
+                  </Thead>
+                  <Tbody>
+                    {event.participants.map((user, index) => (
+                      <Tr key={user.id}>
+                        <Td>{index + 1}</Td>
+                        <Td>
+                          <HStack>
+                            <EmailIcon color="blue.500" />
+                            <Text>{user.email}</Text>
+                          </HStack>
+                        </Td>
+                      </Tr>
+                    ))}
+                  </Tbody>
+                </Table>
+              </Box>
+            </>
+          ) : (
+            <Box p={4} bg={bgColor} borderRadius="md">
+              <Text>Aucun participant inscrit pour le moment.</Text>
+            </Box>
+          )}
+        </Box>
+        
+        {/* Information sur le créateur */}
+        {event.creator && (
+          <Box>
+            <Text fontSize="sm" color="gray.500">
+              Créé par: {event.creator.email}
+            </Text>
+          </Box>
+        )}
       </VStack>
     </Container>
   )
